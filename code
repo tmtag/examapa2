@@ -1,0 +1,155 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct node node_t;
+typedef struct edge edge_t;
+
+struct node {
+    //information (name) about the node
+    char city_name[50];
+
+    // pointer o the adj list
+    edge_t* adj_list;
+
+
+    //pointer to the next node in the list of nodes
+    node_t* next_node;
+};
+
+struct edge{
+    // pointer to the destination node
+    node_t* dest;
+
+    //weight (only for weighted graphs)
+    int distance;
+
+    //pointer to the next edge in the adjacency list
+    edge_t* next_edge;
+};
+
+
+// function to create nodes
+node_t* new_node(char* node_name, node_t* node_list){
+    //create the node
+    node_t* tmp = (node_t*) malloc (sizeof(struct node));
+
+    //populate the node (name)
+    strcpy(tmp->city_name, node_name);
+
+    //initialize the adjacency list
+    tmp->adj_list=NULL;
+
+    //initialize the pointer to the next node
+
+
+    // head insert the node in the list
+    tmp->next_node = node_list;
+    return tmp;
+}
+
+
+//function to create the edges
+edge_t* new_edge(node_t* dest_node, int dist, edge_t* adj_list){
+
+    //create the edge
+    edge_t* tmp = (edge_t*) malloc(sizeof(struct edge));
+
+    tmp ->dest  = dest_node;
+
+    tmp->distance = dist;
+
+    tmp->next_edge = adj_list;
+
+    return tmp;
+}
+
+
+//function to search nodes
+// returns a pointer to the node if the node is found
+//return NULL if the node doesnt exist
+ node_t* search_node(node_t* node_list, char* node_name){
+
+ node_t* tmp = node_list;
+ while(tmp != NULL){
+
+    if (strcmp(tmp->city_name, node_name) == 0){
+
+        return tmp;
+    }
+    tmp = tmp->next_node;
+ }
+    return NULL;
+
+ }
+
+// returns the head of the list of nodes
+node_t* add_edge(node_t*node_list, char* source_node, char* dest_node, int dist ){
+
+    node_t* src_tmp;
+    node_t* dst_tmp;
+    //search if the source node exist
+    //if so, use it
+    //if not, create it
+    src_tmp = search_node(node_list, source_node);
+    if(src_tmp == NULL){
+        node_list = new_node(source_node, node_list);
+        src_tmp = search_node(node_list, source_node);
+        //this way I have the new node that I created in the scr_temp pointer
+    }
+
+     //search if the dest node exist
+    //if so, use it
+    //if not, create it
+    dst_tmp = search_node(node_list, dest_node);
+    if (dst_tmp == NULL){
+
+        node_list = new_node(dest_node, node_list);
+        dst_tmp = search_node(node_list, dest_node);
+    }
+
+    //at this point I have both source and dest nods in my pointers
+    // add the edge in the source node
+
+    src_tmp ->adj_list = new_edge(dst_tmp, dist, src_tmp ->adj_list);
+
+    //if the graph is undirected
+    //we add the edges to the adjacency list of dst_node as well
+
+    dst_tmp ->adj_list = new_edge(src_tmp, dist, dst_tmp ->adj_list);
+    return node_list;
+
+}
+
+ //print all nodes and for each
+ void printAll(node_t* graph_head){
+
+    node_t* tmp = graph_head;
+    while(tmp != NULL){
+
+        printf("Node %s\n", tmp ->city_name);
+
+        edge_t* tmp_edge = tmp ->adj_list;
+
+        while(tmp_edge != NULL){
+
+            printf("---> connected to node %s with distance %d\n", tmp_edge->dest->city_name, tmp_edge->distance);
+            tmp_edge = tmp_edge->next_edge;
+        }
+        tmp = tmp->next_node;
+    }
+
+ }
+
+
+int main()
+{
+    node_t* graph_head = NULL;
+
+    graph_head = add_edge(graph_head, "Tashkent", "Turin", 600);
+    //graph_head = add_edge(graph_head, "Turin", "Tashkent", 600);
+    graph_head = add_edge(graph_head, "Turin", "Rome", 200);
+    graph_head = add_edge(graph_head, "Rome", "Berlin", 300);
+    graph_head = add_edge(graph_head, "Rome", "Tashkent", 650);
+    printAll(graph_head);
+    return 1;
+}
